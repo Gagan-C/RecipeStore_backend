@@ -4,13 +4,25 @@ import sys
 import mysql.connector
 import configparser
 
+from flask_httpauth import HTTPBasicAuth
+
+# initialization
+auth = HTTPBasicAuth()
 app = flask.Flask(__name__)
 app.config["DEBUG"] = False
 
 config=configparser.ConfigParser()
 config.read('setting.ini')
 
+@auth.verify_password
+def verify_password(username, password):
+    if username in ['admin'] and password in ['Admin123']:
+        return True
+    else:
+        return False
+
 @app.route('/api/recipe/byName/', methods=['GET'])
+@auth.login_required
 def RecipeByName():
     
     conn = mysql.connector.MySQLConnection(host=config.get('rs_db','host'),
