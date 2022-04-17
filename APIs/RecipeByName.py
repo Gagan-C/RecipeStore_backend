@@ -14,6 +14,51 @@ app.config["DEBUG"] = False
 config=configparser.ConfigParser()
 config.read('setting.ini')
 
+def ConvertListToCommaSeperatedString(p,index):
+    stringval=""
+    count=0;
+    for i in p:
+        if (count==0):
+            stringval=str(i[index])
+        else:
+            stringval=stringval+","+str(i[index])
+        count=count+1
+    return stringval
+def generateDictonaryWithInputs(recipes, recipeIngredients, ingredients):
+    result=[]
+    for recipe in recipes:
+        listOfingredientsIds=[]
+        for recipeIngredient in recipeIngredients:
+            if(recipeIngredient[1]==recipe[0]):
+                listOfingredientsIds.append(recipeIngredient[2])
+        listOfIngredients=[]
+        for ingredientid in listOfingredientsIds:
+            for ingredient in ingredients:
+                if(ingredientid == ingredient[0]):
+                    listOfIngredients.append(
+                        {
+                            'ingredientId':ingredient[0],
+                            'ingredientName':ingredient[1]
+                        }
+            )
+        result.append(
+                {
+                        'recipeId':recipe[0],
+                        'recipeName':recipe[1],
+                        'listOfIngredientIds':listOfingredientsIds,
+                        'prepTime':recipe[2],
+                        'cookTime':recipe[3],
+                        'ingredients':listOfIngredients,
+                        'totalTime':recipe[4],
+                        'servings':recipe[5],
+                        'cusine':recipe[6],
+                        'course':recipe[7],
+                        'diet':recipe[8],
+                        'instructions':recipe[9]
+                    }
+            )
+    return result
+
 @auth.verify_password
 def verify_password(username, password):
     if username in ['admin'] and password in ['Admin123']:
@@ -35,26 +80,19 @@ def RecipeByName():
     cursorRecipeIngredients=conn.cursor()
     if 'recipeName' in request.args:
         recipeName = str(request.args['recipeName'])
-    
+    else:
+        return jsonify({'message':"Wrong parameters"})
     if conn.is_connected():
         print('Connected to MySQL database')
         # executing select query for recipes
         cursorRecipies.execute(f""" SELECT * FROM RECIPE WHERE RECIPE_NAME LIKE '%{recipeName}%'""")
-        dataIngredients = cursorRecipies.fetchall ()
+        dataIngredients = cursorRecipies.fetchall()
         result=[]
         if len(dataIngredients)>0:
             for row in dataIngredients:
                 cursorRecipeIngredients.execute(f""" SELECT * FROM RECIPE_INGREDIENTS WHERE RECIPE_ID={row[0]}""")
                 integrations=cursorRecipeIngredients.fetchall()
-                listOfIngredientId=""
-                count=0
-                for integration in integrations:
-                    if count==0:
-                        listOfIngredientId=str(integration[2])
-                    else:
-                        listOfIngredientId=listOfIngredientId+","+str(integration[2])
-
-                    count=count+1
+                listOfIngredientId=ConvertListToCommaSeperatedString(integrations,2)
                 cursorIngredients.execute(f"""SELECT * FROM INGREDIENT WHERE INGREDIENT_ID IN ({listOfIngredientId})""")
                 ingredients=cursorIngredients.fetchall()
                 listOfIngredients=[]
@@ -71,7 +109,6 @@ def RecipeByName():
                         'recipeName':row[1],
                         'prepTime':row[2],
                         'cookTime':row[3],
-                        'ingredients':listOfIngredients,
                         'totalTime':row[4],
                         'servings':row[5],
                         'cusine':row[6],
@@ -87,5 +124,49 @@ def RecipeByName():
         else:
             return jsonify({'message':"No Records Found"})
     else:
-        print(" Not connected to database")
+        print("Not connected to database")
+
+@app.route('/api/recipe/byIngredients/', methods=['GET'])
+@auth.login_required
+def RecipeByIngredients():
+    conn = mysql.connector.MySQLConnection(host=config.get('rs_db','host'),
+                                       port=config.get('rs_db','port'),
+                                       database=config.get('rs_db','database'),
+                                       user=config.get('rs_db','user'),
+                                       password=config.get('rs_db','password'))
+    cursorIngredients = conn.cursor()
+    cursorRecipes=conn.cursor()
+    cursorRecipeIngredients=conn.cursor()
+    cursorRecipeIngredients2=conn.cursor()
+    cursorIngredients2=conn.cursor()
+    if 'ingredients' in request.args:
+        ingredientsInput = request.args['ingredients']
+        
+    else:
+        return jsonify({'message':"Wrong parameters"})
+    if conn.is_connected():
+        print('Connected to MySQL database')
+    else:
+        return jsonify({'message':"Not connected to database"})
+    
+    cursorIngredients.execute(f"""SELECT * FROM INGREDIENT WHERE INGREDIENT_NAME REGEXP '{ingredientsInput}'""")
+    
+    ingredients=cursorIngredients.fetchall()
+    listOfIngredientIds=ConvertListToCommaSeperatedString(ingredients,0)
+    
+
+    cursorRecipeIngredients.execute(f"""SELECT * FROM RECIPE_INGREDIENTS WHERE INGREDIENT_ID IN ({listOfIngredientIds})""")
+    recipeIngredients=cursorRecipeIngredients.fetchall()
+    listOfRecipeIds=ConvertListToCommaSeperatedString(recipeIngredients,1)
+    
+    cursorRecipeIngredients2.execute(f"""SELECT * FROM RECIPE_INGREDIENTS WHERE RECIPE_ID IN ({listOfRecipeIds})""")
+    recipeIngredients2=cursorRecipeIngredients2.fetchall()
+    listOfIngredientIds2=ConvertListToCommaSeperatedString(recipeIngredients2,2)
+    cursorIngredients2.execute(f"""SELECT * FROM INGREDIENT WHERE INGREDIENT_ID IN ({listOfIngredientIds2})""")
+    ingredients2=cursorIngredients2.fetchall()
+    cursorRecipes.execute(f"""SELECT * FROM RECIPE WHERE RECIPE_ID IN ({listOfRecipeIds})""")
+    recipes=cursorRecipes.fetchall()
+    return jsonify(generateDictonaryWithInputs(recipes,recipeIngredients2, ingredients2))
+
+
 app.run(port=config.get('settings','port'))
