@@ -3,14 +3,14 @@ import flask
 import sys
 import mysql.connector
 import configparser
-
+from flask_cors import CORS
 from flask_httpauth import HTTPBasicAuth
 
 # initialization
 auth = HTTPBasicAuth()
 app = flask.Flask(__name__)
 app.config["DEBUG"] = False
-
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 config=configparser.ConfigParser()
 config.read('setting.ini')
 
