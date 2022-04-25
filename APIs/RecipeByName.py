@@ -169,5 +169,18 @@ def RecipeByIngredients():
     recipes=cursorRecipes.fetchall()
     return jsonify(generateDictonaryWithInputs(recipes,recipeIngredients2, ingredients2))
 
-
+@app.route('/api/recipe/potentialRecipe/', methods=['POST'])
+@auth.login_required
+def AddPotentialRecipe():
+    conn = mysql.connector.MySQLConnection(host=config.get('rs_db','host'),
+                                       port=config.get('rs_db','port'),
+                                       database=config.get('rs_db','database'),
+                                       user=config.get('rs_db','user'),
+                                       password=config.get('rs_db','password'))
+    cursorPotential = conn.cursor()
+    cursorPotential.execute(f"""INSERT INTO RECIPE_PROPOSAL (RECIPE_NAME,PREP_TIME,COOK_TIME,TOTAL_TIME,SERVINGS,CUISINE,COURSE,DIET,INSTRUCTIONS,INGREDIENTS) VALUES ('{request.args['RecipeName']}',{request.args['PrepTime']},{request.args['CookTime']},{request.args['TotalTime']},{request.args['Servings']},'{request.args['Cuisine']}','{request.args['Course']}','{request.args['Diet']}','{request.args['Instructions']}','{request.args['Ingredients']}')""")
+    
+    conn.commit()
+    cursorPotential.close()
+    return jsonify({'status':"success"})
 app.run(port=config.get('settings','port'))
