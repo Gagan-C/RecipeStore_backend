@@ -114,7 +114,8 @@ def RecipeByName():
                         'cusine':row[6],
                         'course':row[7],
                         'diet':row[8],
-                        'instructions':row[9]
+                        'instructions':row[9],
+                        'ingredients':listOfIngredients
                     }
                 )
         
