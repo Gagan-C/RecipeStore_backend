@@ -14,4 +14,5 @@
 * Run RecipeByName.py to start server
 
 ## Sources
-Data used in the project is downloaded from https://www.kaggle.com/kanishk307/6000-indian-food-recipes-dataset 
+* Data used in the project is downloaded from https://www.kaggle.com/kanishk307/6000-indian-food-recipes-dataset 
+* Front end of the application is avaiable at: https://github.com/Gowtham369/Recipe_Store
