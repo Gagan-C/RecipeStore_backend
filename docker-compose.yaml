@@ -1,7 +1,7 @@
 version: '3'
 services:
   backend:
-    build: gaggu221/recipe-store_backend
+    image: gaggu221/recipe-store_backend
     links:
       - db
     ports:
