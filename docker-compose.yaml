@@ -1,17 +1,16 @@
 version: '3'
 services:
-  app:
-    build: ./APIs
+  backend:
+    build: gaggu221/recipe-store_backend
     links:
       - db
     ports:
       - "5000:5000"
     depends_on:
       - db
-      
+
   db:
     image: mysql
-    # build: ./Database
     ports:
       - "3306:3306"
     environment:
@@ -22,3 +21,12 @@ services:
       - ./Database/scripts/Recipe.sql:/docker-entrypoint-initdb.d/3.sql
       - ./Database/scripts/RecipeIngredients.sql:/docker-entrypoint-initdb.d/4.sql
       - ./data:/var/lib/mysql
+  frontend:
+    image: gowtham369003/recipe-store
+    depends_on:
+      - backend
+      - db
+    ports:
+      - "3000:3000"
+    
+    
