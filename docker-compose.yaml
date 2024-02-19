@@ -1,0 +1,32 @@
+version: '3'
+services:
+  backend:
+    image: gaggu221/recipe-store_backend
+    links:
+      - db
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  db:
+    image: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: Dev123
+    volumes:
+      - ./Database/scripts/Recipe_Store_DDL.sql:/docker-entrypoint-initdb.d/1.sql
+      - ./Database/scripts/Ingredients.sql:/docker-entrypoint-initdb.d/2.sql
+      - ./Database/scripts/Recipe.sql:/docker-entrypoint-initdb.d/3.sql
+      - ./Database/scripts/RecipeIngredients.sql:/docker-entrypoint-initdb.d/4.sql
+      - ./data:/var/lib/mysql
+  frontend:
+    image: gowtham369003/recipe-store
+    depends_on:
+      - backend
+      - db
+    ports:
+      - "3000:3000"
+    
+    

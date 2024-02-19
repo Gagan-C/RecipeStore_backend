@@ -183,4 +183,4 @@ def AddPotentialRecipe():
     conn.commit()
     cursorPotential.close()
     return jsonify({'status':"success"})
-app.run(port=config.get('settings','port'))
+app.run(host='0.0.0.0',port=config.get('settings','port'))
