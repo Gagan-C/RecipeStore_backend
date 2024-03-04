@@ -13,6 +13,9 @@
 * Change API's/Setting.ini if you have a different server or plan to run service on a different port
 * Run RecipeByName.py to start server
 
+## Steps to deploy using Docker.
+* Clone the repository and run docker compose up command to deploy the application.
+
 ## Sources
 * Data used in the project is downloaded from https://www.kaggle.com/kanishk307/6000-indian-food-recipes-dataset 
 * Front end of the application is avaiable at: https://github.com/Gowtham369/Recipe_Store
