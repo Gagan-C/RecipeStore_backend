@@ -1,8 +1,6 @@
-FROM python
+FROM python:3.13-slim
 
-RUN apt update
 WORKDIR /api
-
 
 RUN pip install flask  mysql-connector-python  Flask-HTTPAuth  Flask-Cors
 
