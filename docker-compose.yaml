@@ -1,10 +1,12 @@
 services:
   backend:
-    image: gaggu221/recipe-store_backend
+    build:
+      context: ./APIs
+      dockerfile: Dockerfile
     links:
       - db
     ports:
-      - "5000:5000"  
+      - "5000:5000"
     depends_on:
       db:
         condition: service_healthy
@@ -17,7 +19,9 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
-      - "3306:3306" 
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -33,3 +37,6 @@ services:
     ports:
       - "80:80"
     restart: always
+
+volumes:
+  db_data:
